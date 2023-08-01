@@ -29,4 +29,4 @@ env:
 artifacts:
   files:
     - '**/*'
-  base-directory: $CODEBUILD_SRC_DIR/path/to/your/flask-app   # Update this path to the correct location of your Flask app
+  base-directory: $simple-python-app  # Update this path to the correct location of your Flask app
