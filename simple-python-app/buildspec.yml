@@ -7,16 +7,16 @@ phases:
       - DOCKER_REGISTRY_USERNAME=$(aws ssm get-parameter --name "/myapp/docker-credentials/username" --with-decryption --query "Parameter.Value" --output text)
       - DOCKER_REGISTRY_PASSWORD=$(aws ssm get-parameter --name "/myapp/docker-credentials/password" --with-decryption --query "Parameter.Value" --output text)
       - DOCKER_REGISTRY_URL=$(aws ssm get-parameter --name "/myapp/docker-registry/url" --with-decryption --query "Parameter.Value" --output text)
+      - echo "Logging in to Docker registry..."
+      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
 
   build:
     commands:
-      - echo "Logging in to Docker registry..."
-      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
       - echo "Current working directory:"
       - pwd
       - echo "Contents of the current directory:"
       - ls -al
-      - cd /home/ubuntu/my-app   # Replace with the absolute path to your Flask app directory
+      - cd $CODEBUILD_SRC_DIR/path/to/your/flask-app   # Update this path to the correct location of your Flask app
       - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest" .
       - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest"
 
@@ -29,4 +29,4 @@ env:
 artifacts:
   files:
     - '**/*'
-  base-directory: /home/ubuntu/my-app   # Replace with the absolute path to your Flask app directory
+  base-directory: $CODEBUILD_SRC_DIR/path/to/your/flask-app   # Update this path to the correct location of your Flask app
