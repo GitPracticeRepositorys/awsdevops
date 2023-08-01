@@ -16,7 +16,7 @@ phases:
       - pwd
       - echo "Contents of the current directory:"
       - ls -al
-      - cd $CODEBUILD_SRC_DIR/path/to/your/flask-app   # Update this path to the correct location of your Flask app
+      - cd simple-python-app   # Update this path to the correct location of your Flask app
       - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest" .
       - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest"
 
