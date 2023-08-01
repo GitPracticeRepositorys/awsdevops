@@ -10,27 +10,34 @@ phases:
   install:
     runtime-versions:
       python: 3.11
+    commands:
+      - echo "Installing Docker..."
+      - apt-get update -y
+      - apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+      - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+      - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+      - apt-get update -y
+      - apt-get install -y docker-ce
+      - echo "Docker version:"
+      - docker --version
 
   pre_build:
     commands:
-      - echo "Installing dependencies..."
-      - pip install -r simple-python-app/requirements.txt
+      - echo "Retrieving Docker registry credentials from AWS SSM Parameter Store..."
+      - DOCKER_REGISTRY_USERNAME=$(aws ssm get-parameter --name "/myapp/docker-credentials/username" --with-decryption --query "Parameter.Value" --output text)
+      - DOCKER_REGISTRY_PASSWORD=$(aws ssm get-parameter --name "/myapp/docker-credentials/password" --with-decryption --query "Parameter.Value" --output text)
+      - DOCKER_REGISTRY_URL=$(aws ssm get-parameter --name "/myapp/docker-registry/url" --with-decryption --query "Parameter.Value" --output text)
+      - echo "Logging in to Docker registry..."
+      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
 
   build:
     commands:
-      - echo "Running tests..."
-      - echo "Logging in to Docker registry..."
-      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
       - echo "Building Docker image..."
-      - cd simple-python-app
-      - docker image build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest" .
-      - docker image push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest"
-
-  post_build:
-    commands:
-      - echo "Build completed successfully!"
+      - cd path/to/your/flask-app  # Replace with the correct path to your Flask app directory
+      - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest" .
+      - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest"
 
 artifacts:
   files:
     - '**/*'
-  base-directory: simple-python-app
+  base-directory: path/to/your/flask-app  # Replace with the correct path to your Flask app directory
